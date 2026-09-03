@@ -35,4 +35,4 @@ Out of scope:
 
 ## Notes for reviewers
 
-This is a developer tool. It reads the value of a matching form control on the **active tab** after the user clicks **Find Input**. Values stay in the popup. Password inputs are not returned.
+This is a developer tool. It reads form fields on the **active tab** after the user clicks **Load Page**. Values stay in the popup. Password inputs are not returned.

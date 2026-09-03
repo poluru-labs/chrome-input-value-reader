@@ -6,7 +6,7 @@ Input Value Reader is a local Chrome extension maintained by **Subrahmanyam Polu
 
 ## What this extension does
 
-When you click **Find Input**, the extension looks up one element on the **currently active tab** using the CSS selector you typed. If that element is an `<input>`, `<textarea>`, or `<select>`, the matching value is shown in the popup.
+When you click **Load Page**, the extension reads the **current tab URL** and every `<input>`, `<textarea>`, and `<select>` on that page. Selectors and values are shown in the popup table.
 
 ## What we collect
 
@@ -24,8 +24,8 @@ Values exist only in memory in the popup until you close it or click **Clear**.
 
 | Permission | Why |
 | --- | --- |
-| `activeTab` | Access the tab you are looking at, only after you open the popup and run a search |
-| `scripting` | Run a one-shot lookup on that tab |
+| `activeTab` | Access the tab you are looking at, only after you click Load Page |
+| `scripting` | Run a one-shot scan of form fields on that tab |
 
 The extension does **not** inject a content script on every website.
 

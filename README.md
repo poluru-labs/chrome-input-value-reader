@@ -1,6 +1,6 @@
 # Input Value Reader
 
-Chrome extension (Manifest V3) that finds an `<input>`, `<textarea>`, or `<select>` on the **active tab** using a CSS selector and shows its value in the popup.
+Chrome extension (Manifest V3) that loads the **active tab** and lists every `<input>`, `<textarea>`, and `<select>` in a selector / value table.
 
 Maintained by [Subrahmanyam Poluru](https://polurus.com) · Poluru Labs.
 
@@ -8,9 +8,9 @@ Maintained by [Subrahmanyam Poluru](https://polurus.com) · Poluru Labs.
 
 ## Features
 
-- Lookup by ID, class, attribute, or any CSS selector
-- Reads text, email, number, textarea, select, checkbox, and radio controls
-- Highlights the matched element on the page
+- **Load Page** reads the current tab URL and every form field
+- Table of CSS selector and current value
+- Covers text, email, number, textarea, select, checkbox, and radio
 - Password field values are never displayed
 - Local only: no network calls, storage, or analytics
 
@@ -26,12 +26,8 @@ Maintained by [Subrahmanyam Poluru](https://polurus.com) · Poluru Labs.
 
 1. Open a page that has form fields
 2. Click the extension icon
-3. Enter a selector, for example:
-   - `#inputId`
-   - `.email-input`
-   - `[name="username"]`
-   - `input[type="email"]`
-4. Click **Find Input** (or press Enter)
+3. Click **Load Page**
+4. Review the table: **Selector** | **Value**
 
 Chrome cannot run this on `chrome://` pages or the Chrome Web Store.
 

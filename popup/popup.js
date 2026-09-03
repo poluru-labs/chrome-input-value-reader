@@ -1,42 +1,30 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const selectorInput = document.getElementById('selector');
-  const findButton = document.getElementById('findInput');
+  const loadButton = document.getElementById('loadPage');
   const clearButton = document.getElementById('clearResults');
   const output = document.getElementById('output');
   const kicker = document.getElementById('resultKicker');
+  const pageUrl = document.getElementById('pageUrl');
 
-  findButton.addEventListener('click', readValue);
+  loadButton.addEventListener('click', loadPage);
   clearButton.addEventListener('click', resetUi);
 
-  selectorInput.addEventListener('keydown', function (event) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      readValue();
+  showTabUrl();
+
+  async function showTabUrl() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.url) {
+        pageUrl.textContent = tab.url;
+        pageUrl.title = tab.url;
+      }
+    } catch {
+      pageUrl.textContent = 'Could not read the current tab URL.';
     }
-  });
+  }
 
-  document.querySelectorAll('.chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      document.querySelectorAll('.chip').forEach(function (other) {
-        other.classList.toggle('is-active', other === chip);
-      });
-      selectorInput.value = chip.getAttribute('data-selector') || '';
-      selectorInput.focus();
-    });
-  });
-
-  selectorInput.focus();
-
-  async function readValue() {
-    const selector = selectorInput.value.trim();
-
-    if (!selector) {
-      showMessage('Enter a CSS selector first.', 'error');
-      return;
-    }
-
-    findButton.classList.add('is-busy');
-    findButton.textContent = 'Reading…';
+  async function loadPage() {
+    loadButton.classList.add('is-busy');
+    loadButton.textContent = 'Loading…';
 
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -46,6 +34,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
+      if (tab.url) {
+        pageUrl.textContent = tab.url;
+        pageUrl.title = tab.url;
+      }
+
       if (!isInjectableUrl(tab.url)) {
         showMessage('Chrome internal and Web Store pages cannot be inspected.', 'error');
         return;
@@ -53,65 +46,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: findInputValue,
-        args: [selector],
+        func: collectFormFields,
       });
 
-      const result = results[0]?.result;
-      if (!result) {
+      const payload = results[0]?.result;
+      if (!payload) {
         showMessage('No result from the page.', 'error');
         return;
       }
 
-      if (result.error) {
-        showMessage(result.error, 'error');
-      } else if (result.found && result.masked) {
-        showResult({
-          value: 'Hidden (password field)',
-          masked: true,
-          selector,
-          type: result.type,
-          tagName: result.tagName,
-        });
-      } else if (result.found) {
-        showResult({
-          value: result.value === '' ? '(empty)' : result.value,
-          masked: false,
-          selector,
-          type: result.type,
-          tagName: result.tagName,
-        });
-      } else {
-        showMessage('No input, textarea, or select matched that selector.', 'error');
+      if (payload.error) {
+        showMessage(payload.error, 'error');
+        return;
       }
+
+      if (!payload.fields.length) {
+        showMessage('No input, textarea, or select fields on this page.', 'error');
+        return;
+      }
+
+      showTable(payload.fields);
     } catch (error) {
       showMessage(error.message, 'error');
     } finally {
-      findButton.classList.remove('is-busy');
-      findButton.textContent = 'Read value';
+      loadButton.classList.remove('is-busy');
+      loadButton.textContent = 'Load Page';
     }
   }
 
   function resetUi() {
-    selectorInput.value = '';
-    document.querySelectorAll('.chip').forEach(function (chip) {
-      chip.classList.remove('is-active');
-    });
-    kicker.textContent = 'Result';
+    kicker.textContent = 'Fields';
     output.className = 'result-body is-empty';
     output.replaceChildren();
     const title = document.createElement('p');
     title.className = 'empty-title';
-    title.textContent = 'No lookup yet';
+    title.textContent = 'Nothing loaded';
     const copy = document.createElement('p');
     copy.className = 'empty-copy';
-    copy.textContent = 'Pick a chip or type a selector, then read the active tab.';
+    copy.textContent = 'Click Load Page to read every input, textarea, and select on this tab.';
     output.append(title, copy);
-    selectorInput.focus();
+    showTabUrl();
   }
 
   function showMessage(message, type) {
-    kicker.textContent = type === 'error' ? 'Could not read' : 'Result';
+    kicker.textContent = type === 'error' ? 'Could not load' : 'Fields';
     output.className = 'result-body';
     output.replaceChildren();
     const p = document.createElement('p');
@@ -120,31 +98,60 @@ document.addEventListener('DOMContentLoaded', function () {
     output.append(p);
   }
 
-  function showResult(detail) {
-    kicker.textContent = detail.masked ? 'Password field' : 'Matched';
+  function showTable(fields) {
+    kicker.textContent = fields.length === 1 ? '1 field' : fields.length + ' fields';
     output.className = 'result-body';
     output.replaceChildren();
 
-    const value = document.createElement('p');
-    value.className = 'value-block' + (detail.masked ? ' is-masked' : '');
-    value.textContent = detail.value;
+    const table = document.createElement('table');
+    table.className = 'grid';
 
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    meta.append(
-      pill(detail.tagName),
-      pill(detail.type),
-      pill(detail.selector),
-    );
+    const colgroup = document.createElement('colgroup');
+    const colSel = document.createElement('col');
+    colSel.className = 'col-selector';
+    const colVal = document.createElement('col');
+    colVal.className = 'col-value';
+    colgroup.append(colSel, colVal);
 
-    output.append(value, meta);
-  }
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    const thSel = document.createElement('th');
+    thSel.scope = 'col';
+    thSel.textContent = 'Selector';
+    const thVal = document.createElement('th');
+    thVal.scope = 'col';
+    thVal.textContent = 'Value';
+    headRow.append(thSel, thVal);
+    thead.append(headRow);
 
-  function pill(text) {
-    const span = document.createElement('span');
-    span.className = 'pill';
-    span.textContent = text;
-    return span;
+    const tbody = document.createElement('tbody');
+    fields.forEach(function (field) {
+      const tr = document.createElement('tr');
+      const tdSel = document.createElement('td');
+      const sel = document.createElement('span');
+      sel.className = 'sel';
+      sel.textContent = field.selector;
+      tdSel.append(sel);
+
+      const tdVal = document.createElement('td');
+      const val = document.createElement('span');
+      if (field.masked) {
+        val.className = 'val is-masked';
+        val.textContent = '[hidden]';
+      } else if (field.value === '') {
+        val.className = 'val is-empty';
+        val.textContent = '—';
+      } else {
+        val.className = 'val';
+        val.textContent = field.value;
+      }
+      tdVal.append(val);
+      tr.append(tdSel, tdVal);
+      tbody.append(tr);
+    });
+
+    table.append(colgroup, thead, tbody);
+    output.append(table);
   }
 
   function isInjectableUrl(url) {
@@ -161,76 +168,111 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-function findInputValue(selector) {
-  try {
-    const element = document.querySelector(selector);
+function collectFormFields() {
+  const skipTypes = { submit: true, button: true, reset: true, image: true };
+  const nodes = document.querySelectorAll('input, textarea, select');
+  const used = {};
+  const fields = [];
 
-    if (!element) {
-      return { found: false, error: null };
+  function attrEscape(value) {
+    return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
+  function cssPath(el) {
+    if (el.id) return '#' + CSS.escape(el.id);
+    const parts = [];
+    let node = el;
+    while (node && node.nodeType === 1 && parts.length < 5) {
+      let part = node.tagName.toLowerCase();
+      if (node.id) {
+        parts.unshift('#' + CSS.escape(node.id));
+        break;
+      }
+      const parent = node.parentElement;
+      if (parent) {
+        const same = Array.prototype.filter.call(parent.children, function (child) {
+          return child.tagName === node.tagName;
+        });
+        if (same.length > 1) {
+          part += ':nth-of-type(' + (same.indexOf(node) + 1) + ')';
+        }
+      }
+      parts.unshift(part);
+      node = parent;
+      if (!node || node === document.documentElement) break;
+    }
+    return parts.join(' > ');
+  }
+
+  function uniqueSelector(el) {
+    const candidates = [];
+    const tag = el.tagName.toLowerCase();
+    if (el.id) candidates.push('#' + CSS.escape(el.id));
+    if (el.getAttribute('name')) {
+      const name = attrEscape(el.getAttribute('name'));
+      if ((el.type === 'radio' || el.type === 'checkbox') && el.value) {
+        candidates.push(tag + '[name="' + name + '"][value="' + attrEscape(el.value) + '"]');
+      }
+      candidates.push(tag + '[name="' + name + '"]');
+    }
+    if (el.getAttribute('data-field')) {
+      candidates.push('[data-field="' + attrEscape(el.getAttribute('data-field')) + '"]');
+    }
+    if (el.classList && el.classList.length) {
+      const cls = Array.prototype.map.call(el.classList, function (c) {
+        return CSS.escape(c);
+      }).join('.');
+      candidates.push(tag + '.' + cls);
     }
 
-    const tag = element.tagName.toUpperCase();
-    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
-      return {
-        found: false,
-        error: 'Matched ' + element.tagName.toLowerCase() + ', which is not an input, textarea, or select.',
-      };
+    for (let i = 0; i < candidates.length; i++) {
+      const sel = candidates[i];
+      try {
+        if (!used[sel] && document.querySelectorAll(sel).length === 1) {
+          used[sel] = true;
+          return sel;
+        }
+      } catch (err) {
+        /* skip invalid candidate */
+      }
     }
 
-    if (tag === 'INPUT' && element.type === 'password') {
-      highlightElement(element);
-      return {
-        found: true,
-        masked: true,
-        value: '',
-        type: 'password',
-        tagName: 'input',
-        error: null,
-      };
-    }
+    let path = cssPath(el);
+    if (used[path]) path = path + ':nth-child(' + (Array.prototype.indexOf.call(el.parentNode.children, el) + 1) + ')';
+    used[path] = true;
+    return path;
+  }
 
+  Array.prototype.forEach.call(nodes, function (el) {
+    const type = (el.type || el.tagName.toLowerCase()).toLowerCase();
+    if (skipTypes[type]) return;
+
+    const masked = el.tagName === 'INPUT' && type === 'password';
     let value = '';
-    if (tag === 'SELECT') {
-      value = element.selectedOptions.length > 0 ? element.selectedOptions[0].text : '';
-    } else if (element.type === 'checkbox' || element.type === 'radio') {
-      value = element.checked ? element.value || 'on' : '';
+
+    if (masked) {
+      value = '';
+    } else if (el.tagName === 'SELECT') {
+      value = el.multiple
+        ? Array.prototype.map.call(el.selectedOptions, function (opt) { return opt.text; }).join(', ')
+        : (el.selectedOptions.length ? el.selectedOptions[0].text : '');
+    } else if (type === 'checkbox' || type === 'radio') {
+      value = el.checked ? (el.value || 'on') : 'unchecked';
+    } else if (type === 'file') {
+      value = el.files && el.files.length
+        ? Array.prototype.map.call(el.files, function (file) { return file.name; }).join(', ')
+        : '';
     } else {
-      value = element.value || '';
+      value = el.value || '';
     }
 
-    highlightElement(element);
+    fields.push({
+      selector: uniqueSelector(el),
+      value: value,
+      masked: masked,
+      type: type,
+    });
+  });
 
-    return {
-      found: true,
-      masked: false,
-      value,
-      type: element.type || 'text',
-      tagName: element.tagName.toLowerCase(),
-      error: null,
-    };
-  } catch (error) {
-    return {
-      found: false,
-      error: 'Invalid selector: ' + error.message,
-    };
-  }
-
-  function highlightElement(element) {
-    const originalBorder = element.style.border;
-    const originalBackground = element.style.backgroundColor;
-    const originalOutline = element.style.outline;
-    const originalTransition = element.style.transition;
-
-    element.style.transition = 'all 0.2s ease';
-    element.style.outline = '3px solid #1a9b95';
-    element.style.outlineOffset = '2px';
-    element.style.backgroundColor = '#eef9f8';
-
-    setTimeout(() => {
-      element.style.border = originalBorder;
-      element.style.backgroundColor = originalBackground;
-      element.style.outline = originalOutline;
-      element.style.transition = originalTransition;
-    }, 1800);
-  }
+  return { url: location.href, fields: fields };
 }

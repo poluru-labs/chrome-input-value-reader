@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-- Inspector popup: ink masthead, structured result card, example selector chips
+- **Load Page** lists every form field on the active tab as Selector | Value
+- Wider popup (520px) with wrapping cells and no horizontal scroll
+- Shows the current page URL
+- Inspector popup: ink masthead, structured result card
 - Load unpacked from the repository root (`manifest.json` at the top level)
 
 ## 1.0.0 — 2026-09-02
