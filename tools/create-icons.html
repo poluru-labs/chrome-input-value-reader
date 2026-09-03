@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Value Reader — icon generator</title>
+</head>
+<body>
+    <h1>Icon generator</h1>
+    <p>Creates original 16, 48, and 128 PNG icons for this extension. Click to download.</p>
+    <p>
+        <button type="button" id="generate">Download icons</button>
+    </p>
+    <canvas id="canvas16" width="16" height="16"></canvas>
+    <canvas id="canvas48" width="48" height="48"></canvas>
+    <canvas id="canvas128" width="128" height="128"></canvas>
+
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(0, 0, size, size);
+
+            const fieldHeight = size * 0.25;
+            const fieldWidth = size * 0.75;
+            const fieldX = (size - fieldWidth) / 2;
+            const fieldY = (size - fieldHeight) / 2;
+
+            ctx.fillStyle = 'white';
+            ctx.fillRect(fieldX, fieldY, fieldWidth, fieldHeight);
+
+            const cursorX = fieldX + fieldWidth - fieldHeight / 2;
+            const cursorY = fieldY + fieldHeight / 2;
+            ctx.fillStyle = '#4CAF50';
+            ctx.beginPath();
+            ctx.arc(cursorX, cursorY, fieldHeight / 4, 0, 2 * Math.PI);
+            ctx.fill();
+
+            const link = document.createElement('a');
+            link.download = `icon${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        document.getElementById('generate').addEventListener('click', function () {
+            createIcon('canvas16', 16);
+            createIcon('canvas48', 48);
+            createIcon('canvas128', 128);
+        });
+    </script>
+</body>
+</html>

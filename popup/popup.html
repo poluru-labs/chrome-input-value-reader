@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Input Value Reader</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="mast">
+    <div class="mast-mark" aria-hidden="true">IV</div>
+    <div class="mast-copy">
+      <p class="mast-name">Input Value Reader</p>
+      <p class="mast-tag">Local field inspector</p>
+    </div>
+    <span class="mast-ver">1.0</span>
+  </header>
+
+  <main class="panel">
+    <label class="field-label" for="selector">CSS selector</label>
+    <div class="field-row">
+      <input
+        type="text"
+        id="selector"
+        placeholder="#username, .email-input, [name='email']"
+        spellcheck="false"
+        autocomplete="off"
+      />
+      <kbd class="kbd">⏎</kbd>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="findInput" class="btn btn-primary">Read value</button>
+      <button type="button" id="clearResults" class="btn btn-ghost">Clear</button>
+    </div>
+
+    <section class="result" aria-label="Lookup result">
+      <p class="result-kicker" id="resultKicker">Result</p>
+      <div id="output" class="result-body is-empty" role="status" aria-live="polite">
+        <p class="empty-title">No lookup yet</p>
+        <p class="empty-copy">Pick a chip or type a selector, then read the active tab.</p>
+      </div>
+    </section>
+
+    <div class="chips" aria-label="Example selectors">
+      <button type="button" class="chip" data-selector="#inputId">#inputId</button>
+      <button type="button" class="chip" data-selector=".email-input">.email-input</button>
+      <button type="button" class="chip" data-selector="[name=&quot;password&quot;]">[name]</button>
+      <button type="button" class="chip" data-selector="input[type=&quot;email&quot;]">email</button>
+    </div>
+  </main>
+
+  <footer class="foot">
+    Poluru Labs · Passwords stay hidden · Nothing leaves this machine
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+Input Value Reader
+Copyright (c) 2026 Subrahmanyam Poluru / Poluru Labs
+
+This product is licensed under the MIT License. See the LICENSE file for the
+full license text.
+
+Author: Subrahmanyam Poluru
+Portfolio: https://polurus.com
+LinkedIn: https://www.linkedin.com/in/polurus/
+GitHub: https://github.com/poluru-labs/chrome-input-value-reader
+
+Third-party software
+--------------------
+
+This extension has no bundled npm dependencies. It uses Chrome Extension APIs
+provided by the Chromium project. Chromium and the Chrome name are trademarks
+of Google LLC. This project is not affiliated with Google.
+
+Demo content
+------------
+
+Values in examples/test-page.html are fictional sample data for local testing.
+They are not production credentials or personal information.
+
+Icons
+-----
+
+Toolbar icons in icons/ were generated from tools/create-icons.html
+in this repository. They are original work of Poluru Labs.

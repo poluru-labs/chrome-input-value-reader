@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Input Value Reader</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { padding: 8px; margin-bottom: 10px; width: 200px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Test Page for Input Value Reader Extension</h1>
+    <p>Fictional sample fields for local testing. Not production credentials.</p>
+    
+    <div class="form-group">
+        <label for="inputId">Input ID Example (ID: inputId):</label>
+        <input type="text" id="inputId" value="hello" placeholder="Enter text">
+    </div>
+    
+    <div class="form-group">
+        <label for="username">Username (ID: username):</label>
+        <input type="text" id="username" value="testuser123" placeholder="Enter username">
+    </div>
+    
+    <div class="form-group">
+        <label for="email">Email (Class: email-input):</label>
+        <input type="email" class="email-input" value="test@example.com" placeholder="Enter email">
+    </div>
+    
+    <div class="form-group">
+        <label>Password (Name: password) — extension hides this value:</label>
+        <input type="password" name="password" value="demo-only" placeholder="Enter password" autocomplete="off">
+    </div>
+    
+    <div class="form-group">
+        <label>Search (Data attribute: data-field="search"):</label>
+        <input type="text" data-field="search" value="search query" placeholder="Search...">
+    </div>
+    
+    <div class="form-group">
+        <label for="country">Country (Select):</label>
+        <select id="country">
+            <option value="us">United States</option>
+            <option value="uk" selected>United Kingdom</option>
+            <option value="ca">Canada</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="message">Message (Textarea):</label>
+        <textarea id="message" rows="4">Hello, this is a test message!</textarea>
+    </div>
+    
+    <div class="form-group checkbox-group">
+        <input type="checkbox" id="newsletter" name="newsletter" checked>
+        <label for="newsletter">Subscribe to newsletter</label>
+    </div>
+    
+    <div class="form-group">
+        <label>Gender (Radio buttons):</label>
+        <input type="radio" id="male" name="gender" value="male">
+        <label for="male">Male</label>
+        <input type="radio" id="female" name="gender" value="female" checked>
+        <label for="female">Female</label>
+    </div>
+    
+    <h2>Test Selectors:</h2>
+    <ul>
+        <li><code>#inputId</code> - Should return "hello" (Your use case example!)</li>
+        <li><code>#username</code> - Should return "testuser123"</li>
+        <li><code>.email-input</code> - Should return "test@example.com"</li>
+        <li><code>[name="password"]</code> - Should report the field was found and hide the value</li>
+        <li><code>[data-field="search"]</code> - Should return "search query"</li>
+        <li><code>#country</code> - Should return "United Kingdom"</li>
+        <li><code>#message</code> - Should return "Hello, this is a test message!"</li>
+        <li><code>#newsletter</code> - Should return "on" (checked)</li>
+        <li><code>[name="gender"]:checked</code> - Should return "female"</li>
+    </ul>
+</body>
+</html>
