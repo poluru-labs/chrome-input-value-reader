@@ -6,6 +6,10 @@ Maintained by [Subrahmanyam Poluru](https://polurus.com) · Poluru Labs.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
+## Screenshot
+
+<img width="1406" height="923" alt="image" src="https://github.com/user-attachments/assets/4ca743e3-9c76-4219-b9f9-29001c266343" />
+
 ## Features
 
 - **Load Page** reads the current tab URL and every form field
