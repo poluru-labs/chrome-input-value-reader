@@ -1,4 +1,4 @@
-# Input Value Reader
+# Web Extension for Chrome, Edge Input Value Reader
 
 A Chrome extension for inspecting the current page's form fields without sending data anywhere. It reads the active tab, finds every input, textarea, and select element, and shows a selector/value table in the popup.
 
